@@ -1,0 +1,30 @@
+.container{
+    background-color: aliceblue;
+    width: 21rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    z-index: 10;
+}
+
+.sticky {
+    position: sticky;
+    top: 0px;
+    left: 21.5rem;
+    align-self: flex-start;
+}
+
+.section {
+    border-bottom: 1px solid black;
+}
+
+.element{
+    margin-bottom: 0.5rem;
+    display: flex;
+    flex-direction: row;
+}
+
+input[type="file"] {
+    display: none;
+}

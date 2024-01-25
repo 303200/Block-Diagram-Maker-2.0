@@ -1,0 +1,51 @@
+.container{
+  position:absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  
+  min-width: 60px;
+  width: fit-content;
+  max-width: 480px;
+  
+  min-height: 60px;
+  height: fit-content;
+  
+  padding: 1rem;
+  word-break: break-word;
+  box-sizing: border-box;
+  z-index: 3;
+
+  -webkit-user-select:none;
+  -moz-user-select:none;
+  user-select:none;
+}
+
+.container:hover{
+  cursor: move;
+}
+
+.connectingContainer:hover{
+  cursor: pointer;
+}
+
+.selected {
+  outline: 3px solid #4fdd6e;
+}
+
+.connecting{
+  outline: 3px solid #6495ed;
+}
+
+.grouped{
+  outline: 3px solid #db2c2c;
+}
+
+.insideSkew {
+  transform: skew(10deg)
+}
+
+.insideRotate {
+  transform: rotateZ(-45deg) scaleY(2.1)
+}

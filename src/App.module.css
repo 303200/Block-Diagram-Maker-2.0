@@ -1,0 +1,12 @@
+.container{
+  display: flex;
+  flex-direction: row;
+  background-color: whitesmoke;
+  position:absolute;
+  top:0px;
+  right:0px;
+  bottom:0px;
+  left:0px;
+  height: fit-content;
+  width: fit-content;
+}

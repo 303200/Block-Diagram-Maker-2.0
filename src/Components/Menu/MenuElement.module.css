@@ -1,0 +1,12 @@
+.container{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: whitesmoke;
+    padding: 0.5rem;
+}
+
+.buttons{
+    display: flex;
+    justify-content: space-evenly;
+}
