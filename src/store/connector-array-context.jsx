@@ -60,30 +60,58 @@ function connectorsArrayReducer(state, action) {
             customDefaultStyles: action.payload.styleObject
         };
     } else if (action.type === 'UPDATE_STYLES') {
-        let updatedObject = {...state.customDefaultStyles};
-
-        updatedObject = action.payload.styleObject;
-
+        //zamiana domyślnych stylów łączników zapisywana do localStorage
         const currentProject = JSON.parse(localStorage.getItem("currentProject"));
 
         const storageStyles = JSON.parse(localStorage.getItem(JSON.stringify(`${currentProject.id}-connectorsStyles`)));
 
-        storageStyles.style = action.payload.styleObject.style;
+        let updatedStyle = {...storageStyles.style}
+
+        let updatedNestedStyle = {...updatedStyle.middleLabelStyle};
+
+        let properValue = action.payload.styleValue + 'px';
+        
+        if(action.payload.styleName === 'middleLabelStyleMarginLeft') {
+            updatedNestedStyle.marginLeft = properValue;
+        } else if (action.payload.styleName === 'middleLabelStyleMarginTop') {
+            updatedNestedStyle.marginTop = properValue;
+        } else {
+            updatedStyle[action.payload.styleName] = action.payload.styleValue;
+        }
+
+        updatedStyle.middleLabelStyle = updatedNestedStyle;
+
+        storageStyles.style = updatedStyle;
 
         localStorage.setItem(JSON.stringify(`${currentProject.id}-connectorsStyles`), JSON.stringify(storageStyles));
 
         return {
             ...state,
-            customDefaultStyles: updatedObject,
+            customDefaultStyles: storageStyles,
         };
     } else if (action.type === 'UPDATE_CONNECTOR_STYLES') {
-
+        //zamiana stylu konkretnego łącznika
         let updatedArray = [...state.connectorsArray];
 
-        let updatedObject = updatedArray.find((element) => element.id === action.payload.elementObject.id);
+        let updatedObject = updatedArray.find((element) => element.id === action.payload.elementId);
 
-        // eslint-disable-next-line no-unused-vars
-        updatedObject = {...action.payload.elementObject};
+        let updatedStyle = {...updatedObject.style};
+
+        let updatedNestedStyle = {...updatedStyle.middleLabelStyle};
+
+        let properValue = action.payload.styleValue + 'px';
+
+        if(action.payload.styleName === 'middleLabelStyleMarginLeft') {
+            updatedNestedStyle.marginLeft = properValue;
+        } else if (action.payload.styleName === 'middleLabelStyleMarginTop') {
+            updatedNestedStyle.marginTop = properValue;
+        } else {
+            updatedStyle[action.payload.styleName] = action.payload.styleValue;
+        }
+
+        updatedStyle.middleLabelStyle = updatedNestedStyle;
+
+        updatedObject.style = updatedStyle;
 
         return {
             ...state,
@@ -204,20 +232,26 @@ export default function ConnectorsArrayContextProvider({children, ...restProps})
         });
     }
 
-    function updateDefaultCustomStylesHandler(styleObject) {
+    function updateDefaultCustomStylesHandler(elementType, styleName, styleValue, isValidValue) {
         connectorsArrayDispatch({
             type: 'UPDATE_STYLES',
             payload: {
-                styleObject
+                elementType,
+                styleName,
+                styleValue,
+                isValidValue
             }
         });
     }
 
-    function updateConnectorStyleHandler(elementObject) {
+    function updateConnectorStyleHandler(elementId, styleName, styleValue, isValidValue) {
         connectorsArrayDispatch({
             type: 'UPDATE_CONNECTOR_STYLES',
             payload: {
-                elementObject
+                elementId,
+                styleName,
+                styleValue,
+                isValidValue
             }
         });
     }

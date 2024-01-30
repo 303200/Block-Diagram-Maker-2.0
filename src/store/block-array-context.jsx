@@ -68,9 +68,9 @@ function blocksArrayReducer(state, action) {
 
         let updatedArray = [...state.blocksArray];
 
-        let updatedElement = updatedArray.find((element) => element.id === action.payload.elementObject.id);
+        let updatedElement = updatedArray.find((element) => element.id === action.payload.blockId);
 
-        updatedElement.content = action.payload.elementObject.content;
+        updatedElement.content = action.payload.content;
 
         return {
             ...state,
@@ -111,33 +111,78 @@ function blocksArrayReducer(state, action) {
         };
     } else if (action.type === 'UPDATE_STYLES') {
         //zamiana domyślnych stylów bloków zapisywana do localStorage
-        let updatedArray = [...state.customDefaultStyles];
-        
-        let updatedElement = updatedArray.find((style) => style.type === action.payload.styleObject.type);
-
-        updatedElement.style = action.payload.styleObject.style;
-
         const currentProject = JSON.parse(localStorage.getItem("currentProject"));
 
         const storageStyles = JSON.parse(localStorage.getItem(JSON.stringify(`${currentProject.id}-blocksStyles`)));
 
-        const updatedStyle = storageStyles.find((element) => element.type === action.payload.styleObject.type);
+        const updatedStorageStyle = storageStyles.find((element) => element.type === action.payload.blockType);
 
-        updatedStyle.style = action.payload.styleObject.style;
+        let updatedStyle = {...updatedStorageStyle.style}  
+
+        if(action.payload.styleName === 'autoSize') {
+            const properValueWidth = `${updatedStyle.widthValue}px`;
+            const properValueHeight = `${updatedStyle.heightValue}px`;
+
+            updatedStyle[action.payload.styleName] = action.payload.styleValue
+            updatedStyle['width'] = action.payload.styleValue ? 'fit-content' : properValueWidth;
+            updatedStyle['height'] = action.payload.styleValue ? 'fit-content' : properValueHeight;
+        } else {
+            let properValue = action.payload.styleValue;
+    
+            //czasem wartość musi być zapisana jako wartość + px
+            if(!action.payload.isValidValue) {
+                properValue += 'px';
+            }
+
+            if(action.payload.styleName === 'width') {
+                updatedStyle['widthValue'] = action.payload.styleValue;
+            }
+
+            if(action.payload.styleName === 'height') {
+                updatedStyle['heightValue'] = action.payload.styleValue;
+            }
+    
+            updatedStyle[action.payload.styleName] = properValue;
+        }
+
+        updatedStorageStyle.style = updatedStyle;
 
         localStorage.setItem(JSON.stringify(`${currentProject.id}-blocksStyles`), JSON.stringify(storageStyles));
 
         return {
             ...state,
-            updatedElement: updatedArray
+            customDefaultStyles: storageStyles
         };
+        
     } else if(action.type === 'UPDATE_BLOCK_STYLES') {
         //zamiana stylu konkretnego bloku
         let updatedArray = [...state.blocksArray];
 
-        let updatedElement = updatedArray.find((element) => element.id === action.payload.elementObject.id);
+        let updatedElement = updatedArray.find((element) => element.id === action.payload.blockId);
 
-        updatedElement.style = action.payload.elementObject.style;
+        let updatedStyle = {...updatedElement.style};
+
+        //automatyczny rozmiar bloku potrzebuje specjalnej obsługi
+        if(action.payload.styleName === 'autoSize') {
+            const properValueWidth = `${updatedStyle.widthValue}px`;
+            const properValueHeight = `${updatedStyle.heightValue}px`;
+
+            updatedStyle[action.payload.styleName] = action.payload.styleValue
+            updatedStyle['width'] = action.payload.styleValue ? 'fit-content' : properValueWidth;
+            updatedStyle['height'] = action.payload.styleValue ? 'fit-content' : properValueHeight;
+        } else {
+
+            let properValue = action.payload.styleValue;
+
+            //czasem wartość musi być zapisana jako wartość + px
+            if(!action.payload.isValidValue) {
+                properValue += 'px'
+            }
+
+            updatedStyle[action.payload.styleName] = properValue;
+        }
+
+        updatedElement.style = updatedStyle;
 
         return{
             ...state,
@@ -259,11 +304,12 @@ export default function BlocksArrayContextProvider({children, ...restProps}) {
         });
     }
 
-    function updateBlockContentHandler(elementObject){
+    function updateBlockContentHandler(blockId, content){
         blocksArrayDispatch({
             type: 'UPDATE_CONTENT',
             payload: {
-                elementObject
+                blockId,
+                content
             }
         });
     }
@@ -283,20 +329,26 @@ export default function BlocksArrayContextProvider({children, ...restProps}) {
         });
     }
 
-    function updateDefaultStylesHandler(styleObject) {
+    function updateDefaultStylesHandler(blockType, styleName, styleValue, isValidValue) {
         blocksArrayDispatch({
             type: 'UPDATE_STYLES',
             payload: {
-                styleObject
+                blockType,
+                styleName,
+                styleValue,
+                isValidValue
             }
         });
     }
 
-    function updateBlockStylesHandler(elementObject) {
+    function updateBlockStylesHandler(blockId, styleName, styleValue, isValidValue) {
         blocksArrayDispatch({
             type: 'UPDATE_BLOCK_STYLES',
             payload: {
-                elementObject
+                blockId,
+                styleName,
+                styleValue,
+                isValidValue
             }
         });
     }

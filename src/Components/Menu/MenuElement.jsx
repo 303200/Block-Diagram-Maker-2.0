@@ -19,7 +19,7 @@ export default function MenuElement({title, elementType}) {
     const connectorsArrayContext = useContext(ConnectorsArrayContext);
 
     const [isFormVisible, setIsFormVisible] = useState(false);
-
+    
     return (
         <div>
             <div className={style.container}>

@@ -383,6 +383,8 @@ export default function Canvas() {
 
       {blockFormElement && <FormBlock key={blockFormElement.id} blockObject={blockFormElement} type="individual"/>}
 
+      {groupedBlocks.length > 0 && <FormBlock key={groupedBlocks[0].id} blockObject={groupedBlocks[0]} blocksArray={groupedBlocks} type="grouped"/>}
+
       {connectorFormElement && <FormConnector key={connectorFormElement.id} elementObject={connectorFormElement} type="individual"/>}
 
     </GridLines>

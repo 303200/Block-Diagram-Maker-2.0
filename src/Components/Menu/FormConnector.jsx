@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react"
+import { useContext } from "react"
 import { ConnectorsArrayContext } from '../../store/connector-array-context';
 import styles from './Form.module.css'
 
@@ -6,113 +6,13 @@ export default function FormConnector({elementObject, type}) {
   
   const connectorsArrayContext = useContext(ConnectorsArrayContext);
 
-  const [customStyles, setCustomStyles] = useState(elementObject);
+  function styleChangeHandler(e, isValidValue = true) {
 
-  useEffect(() => {
     if(type === 'default') {
-      connectorsArrayContext.updateDefaultCustomStyles(customStyles);
+      connectorsArrayContext.updateDefaultCustomStyles(elementObject.type, e.target.name, e.target.type === 'checkbox' ? e.target.checked : e.target.value, isValidValue);
     } else {
-      connectorsArrayContext.updateConnectorStyle(customStyles);
+      connectorsArrayContext.updateConnectorStyle(elementObject.id, e.target.name, e.target.type === 'checkbox' ? e.target.checked : e.target.value, isValidValue);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [customStyles])
-
-
-  function styleChangeHandler(e) {
-
-    setCustomStyles((prev) => {
-      let updatedObject = {...prev};
-
-      let updatedStyles = updatedObject.style;
-
-      switch(e.target.name){
-        case 'showHead': {
-          updatedStyles.showHead = e.target.checked;
-          break;
-        }
-        case 'startAnchor': { 
-          updatedStyles.endAnchor = e.target.value;
-          break;
-        }
-        case 'headColor': {
-          updatedStyles.headColor = e.target.value;
-          break;
-        }
-        case 'headSize': {
-          updatedStyles.headSize = e.target.value;
-          break;
-        }
-        case 'showTail': {
-          updatedStyles.showTail = e.target.checked;
-          break;
-        }
-        case 'endAnchor': {
-          updatedStyles.startAnchor = e.target.value;
-          break;
-        }
-        case 'tailColor': {
-          updatedStyles.tailColor = e.target.value;
-          break;
-        }
-        case 'tailSize': {
-          updatedStyles.tailSize = e.target.value;
-          break;
-        }
-        case 'lineColor': {
-          updatedStyles.lineColor = e.target.value;
-          break;
-        }
-        case 'dashness': {
-          updatedStyles.dashness = e.target.checked;
-          break;
-        }
-        case 'strokeWidth': {
-          updatedStyles.strokeWidth = e.target.value;
-          break;
-        }
-        case 'path': {
-          updatedStyles.path = e.target.value;
-          break;
-        }
-        case 'middleLabelText': { 
-          updatedStyles.middleLabelText = e.target.value;
-          break;
-        }
-        case 'middleLabelStyleMarginLeft': {
-          const properValue = `${e.target.value}px`;
-
-          let updatedElement = {...updatedStyles.middleLabelStyle};
-
-          updatedElement = {
-            ...updatedElement,
-            marginLeft: properValue
-          };
-
-          updatedStyles.middleLabelStyle = updatedElement;
-
-          break;
-        }
-        case 'middleLabelStyleMarginTop': {
-          const properValue = `${e.target.value}px`;
-
-          let updatedElement = {...updatedStyles.middleLabelStyle};
-
-          updatedElement = {
-            ...updatedElement,
-            marginTop: properValue
-          };
-
-          updatedStyles.middleLabelStyle = updatedElement;
-
-          break;
-        }
-      }
-
-      return {
-        ...updatedObject,
-        style: updatedStyles
-      };
-    })
   }
 
   function deleteHandler() {
@@ -128,7 +28,7 @@ export default function FormConnector({elementObject, type}) {
         </div>
         <div className={styles.element}>
           <label>Położenie: </label>
-          <select name='startAnchor' value={elementObject.style.endAnchor} onChange={styleChangeHandler}>
+          <select name='endAnchor' value={elementObject.style.startAnchor} onChange={styleChangeHandler}>
               <option value="auto">Automatyczne</option>
               <option value="top">Góra</option>
               <option value="bottom">Dół</option>
@@ -152,7 +52,7 @@ export default function FormConnector({elementObject, type}) {
         </div>
         <div className={styles.element}>
           <label>Położenie: </label>
-          <select name='endAnchor' value={elementObject.style.startAnchor} onChange={styleChangeHandler}>
+          <select name='startAnchor' value={elementObject.style.endAnchor} onChange={styleChangeHandler}>
               <option value="auto">Automatyczne</option>
               <option value="top">Góra</option>
               <option value="bottom">Dół</option>
@@ -198,11 +98,11 @@ export default function FormConnector({elementObject, type}) {
         </div>
         <div className={styles.element}>
           <label>Przesunięcie oś X: </label>
-          <input name='middleLabelStyleMarginLeft' value={(elementObject.style.middleLabelStyle.marginLeft).slice(0,-2)} type='number' step={10} onChange={styleChangeHandler}/>
+          <input name='middleLabelStyleMarginLeft' value={(elementObject.style.middleLabelStyle.marginLeft).slice(0,-2)} type='number' step={10} onChange={(e) => styleChangeHandler(e, false)}/>
         </div>
         <div className={styles.element}>
           <label>Przesunięcie oś Y: </label>
-          <input name='middleLabelStyleMarginTop' value={(elementObject.style.middleLabelStyle.marginTop).slice(0,-2)} type='number' step={10} onChange={styleChangeHandler}/>
+          <input name='middleLabelStyleMarginTop' value={(elementObject.style.middleLabelStyle.marginTop).slice(0,-2)} type='number' step={10} onChange={(e) => styleChangeHandler(e, false)}/>
         </div>
       </div>
       {type === 'individual' && <div className={styles.element}>

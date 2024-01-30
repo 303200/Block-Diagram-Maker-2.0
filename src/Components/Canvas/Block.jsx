@@ -14,31 +14,14 @@ export default function Block({block, onLeftClick, onRightClick, isSelected, isC
 
         const resizeObserver = new ResizeObserver(() => {
 
-            let updatedStyles = {...block.style};
-
             //jeśli blok jest typu warunkowego to wysokość i szerokość bloku muszą być takie same, aby zachować kształt diamentu
             if(block.type === 'warunkowy') {
-
-                const properValue = `${blockRef.current.offsetWidth}px`;
-
-                updatedStyles = {
-                    ...updatedStyles,
-                    height: properValue
-                };
+                blocksArrayContext.updateBlockStyles(block.id, 'height', blockRef.current.offsetWidth, false);
             }
 
-            updatedStyles = {
-                ...updatedStyles,
-                widthValue: blockRef.current.offsetWidth,
-                heightValue: block.type === 'warunkowy' ? blockRef.current.offsetWidth : blockRef.current.offsetHeight,
-            };
+            blocksArrayContext.updateBlockStyles(block.id, 'widthValue', blockRef.current.offsetWidth, true);
 
-            let updatedObject = {
-                ...block,
-                style: updatedStyles
-            };
-
-            blocksArrayContext.updateBlockStyles(updatedObject);
+            blocksArrayContext.updateBlockStyles(block.id, 'heightValue', block.type === 'warunkowy' ? blockRef.current.offsetWidth : blockRef.current.offsetHeight, true);
         })
         
         resizeObserver.observe(blockRef.current);
