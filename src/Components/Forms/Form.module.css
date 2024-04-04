@@ -1,0 +1,92 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    z-index: 10;
+    padding: 0.5rem;
+}
+
+.sticky {
+    position: sticky;
+    top: 0px;
+    left: 21.5rem;
+    align-self: flex-start;
+}
+
+.section {
+    border-bottom: 1px solid #c5c5c5;
+    padding: 0.5rem;
+}
+
+.element {
+    display: flex;
+    gap: 1rem;
+}
+
+.element > input {
+    width: 100%;
+}
+
+.specialButton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.inputLabel {
+    margin-bottom: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    width: 50%;
+}
+
+.inputLabelHorizontal {
+    display: flex;
+    flex-direction: row;
+}
+
+.inputLabelSpecial {
+    width: 100%;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 24px;
+}
+
+select {
+    min-height: 24px;
+}
+
+.inputLabel > input[type="color"], input[type="number"] {
+    width: 100%;
+    box-sizing: border-box;
+    height: 24px;
+}
+
+.expandedOptions {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+.button {
+    width: 100%;
+    display: flex;
+}
+
+.button > button {
+    width: 100%;
+}
+
+@media (min-width: 640px) {
+    .expandedOptionsContainer {
+        display: none;
+    }
+}

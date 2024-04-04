@@ -1,12 +1,24 @@
-.container{
+.container {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    background-color: whitesmoke;
-    padding: 0.5rem;
+    background-color: #ebeeee;
+    user-select: none;
+    padding: 0.5rem 1rem 0.5rem 1rem;
+    border-bottom: 2px groove #ffffff;
 }
 
-.buttons{
+.title:hover {
+    cursor: pointer;
+}
+
+.title {
+    flex: 1;
+    display: flex;
+    justify-content: stretch;
+    align-items: center;
+}
+
+.buttons {
     display: flex;
     justify-content: space-evenly;
 }

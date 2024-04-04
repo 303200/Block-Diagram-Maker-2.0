@@ -1,0 +1,50 @@
+.container {
+    background: linear-gradient(0deg, #ebeeee 0%, #fafafa 55%);
+    border-bottom: 1px solid #c4c5c5;
+    overflow: hidden;
+}
+
+.nameContainer {
+    padding: 0.5rem;
+}
+
+.optionsContainer {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.option {
+    padding: 0.5rem;
+    display: flex;
+    gap: 0.2rem;
+    user-select: none;
+    align-items: center;
+}
+
+.option:hover {
+    cursor: pointer;
+}
+
+.optionString {
+    display: none;
+}
+
+.disabledString {
+    color: #c7c8c9;
+}
+
+.expandedOption {
+    display: none;
+}
+
+@media (min-width: 640px) {
+    .expandedOption {
+        display: flex;
+    }
+}
+
+@media (min-width: 1360px) {
+    .optionString {
+        display: flex;
+    }
+}

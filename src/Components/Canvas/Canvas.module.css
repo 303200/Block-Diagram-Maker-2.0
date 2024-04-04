@@ -1,6 +1,12 @@
-.gridArea{
+.container {
+    flex: 5;
+    overflow: scroll;
+}
+
+.gridArea {
     position: relative;
-    flex: 4;
-    height: 200rem;
-    width: 300rem;
+    height: 2064px;
+    width: 2064px;
+    background-size: 12px 12px;
+    background-image: linear-gradient(to right, #e6e7e7 1px, transparent 1px), linear-gradient(to bottom, #e6e7e7 1px, transparent 1px);
 }

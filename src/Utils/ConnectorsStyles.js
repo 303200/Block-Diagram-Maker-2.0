@@ -1,33 +1,33 @@
 export const DEFAULT_CONNECTORS_STYLES = [
     {
-        type: 'default',
+        type: "default",
         style: {
+            showXarrow: true,
             showHead: true,
-            startAnchor: 'auto',
-            headColor: '#6495ed',
+            startAnchor: "auto",
+            headColor: "#6495ed",
             headSize: 6,
 
             showTail: false,
-            endAnchor: 'auto',
-            tailColor: '#6495ed',
+            endAnchor: "auto",
+            tailColor: "#6495ed",
             tailSize: 6,
 
-            lineColor: '#6495ed',
+            lineColor: "#6495ed",
             strokeWidth: 4,
-            path: 'smooth',
+            path: "smooth",
             dashness: false,
 
-            middleLabelText: 'Etykieta',
+            middleLabelText: "Etykieta",
 
             middleLabelStyle: {
-                padding: '0.5rem',
-                marginTop: '0px',
-                marginLeft: '0px',
-                WebkitUserSelect: 'none',
-                MozUserSelect: 'none',
-                userSelect: 'none',
-            }
-        }
-    }
-]
-    
+                padding: "0.5rem",
+                marginTop: "0px",
+                marginLeft: "0px",
+                WebkitUserSelect: "none",
+                MozUserSelect: "none",
+                userSelect: "none",
+            },
+        },
+    },
+];

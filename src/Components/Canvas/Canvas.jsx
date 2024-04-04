@@ -1,392 +1,388 @@
-import styles from './Canvas.module.css'
-import { useContext, useEffect, useState } from 'react'
-import { BlocksArrayContext } from '../../store/block-array-context';
-import { ConnectorsArrayContext } from '../../store/connector-array-context';
-import GridLines from 'react-gridlines';
-import Block from './Block';
-import FormBlock from '../Menu/FormBlock';
-import FormConnector from '../Menu/FormConnector';
-import Connector from './Connector';
-import { OptionsContext } from '../../store/options-context';
-import Modal from '../Menu/Modal';
+import styles from "./Canvas.module.css";
+import { useContext, useEffect, useState } from "react";
+import { BlocksArrayContext } from "../../store/block-array-context";
+import { ConnectorsArrayContext } from "../../store/connector-array-context";
+import Block from "./Block";
+import Connector from "./Connector";
+import { OptionsContext } from "../../store/options-context";
+import Modal from "../Misc/Modal";
 
 export default function Canvas() {
+    //kontekst przechowujący informacje o tablicy bloków
+    const blocksArrayContext = useContext(BlocksArrayContext);
 
-  //kontekst przechowujący informacje o tablicy bloków
-  const blocksArrayContext = useContext(BlocksArrayContext); 
+    //kontekst przechowujący informacje o tablicy łączników
+    const connectorsArrayContext = useContext(ConnectorsArrayContext);
 
-  //kontekst przechowujący informacje o tablicy łączników
-  const connectorsArrayContext = useContext(ConnectorsArrayContext);
+    //kontekst przechowujący informacje ogólne, potrzebne w kilku miejscach aplikacji
+    const optionsContext = useContext(OptionsContext);
 
-  //kontekst przechowujący informacje ogólne, potrzebne w kilku miejscach aplikacji
-  const optionsContext = useContext(OptionsContext);
+    //obecna pozycja kursora użytkownika
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
+    //pozycja w której został złapany blok
+    const [anchorPosition, setAnchorPosition] = useState({ x: 0, y: 0 });
 
-  //przechowuje informacje o długości tablicy bloków
-  const [blockArrayLength, setBlockArrayLength] = useState(blocksArrayContext.blocksArray.length);
+    //obecnie wybrany blok
+    const [selectedBlock, setSelectedBlock] = useState([]);
 
-  //przechowuje informacje o długości tablicy łączników
-  const [connectorsArrayLength, setConnectorsArrayLength] = useState(connectorsArrayContext.connectorsArray.length);
+    //poprzednia pozycja bloku
+    const [prevBlockPosition, setPrevBlockPosition] = useState({});
 
+    //przechowuje id bloku startowego do utworzenia łącznika
+    const [connectId, setConnectId] = useState(null);
 
-  //obecna pozycja kursora użytkownika
-  const [mousePosition, setMousePosition] = useState({x: 0, y: 0});
+    //tablica zgrupowanych bloków
+    const [groupedBlocks, setGroupedBlocks] = useState([]);
 
-  //pozycja w której został złapany blok
-  const [anchorPosition, setAnchorPosition] = useState({x: 0, y: 0});
+    //głęboka kopia tablicy zgrupowanych bloków
+    const [groupedBlocksPrev, setGroupedBlocksPrev] = useState(JSON.parse(JSON.stringify(groupedBlocks)));
 
+    //czy obecnie odbywa się ruszanie blokiem
+    const [isDragging, setIsDragging] = useState(false);
 
-  //obecnie wybrany blok
-  const [selectedBlock, setSelectedBlock] = useState(null);
+    //czy obecnie odbywa się wybieranie bloków do połączenia
+    const [isConnecting, setIsConnecting] = useState(false);
 
-  //przechowuje id bloku startowego do utworzenia łącznika
-  const [connectId, setConnectId] = useState(null);
+    //obserwuje zamiany w długości tablicy przechowującej informacje o blokach
+    useEffect(() => {
+        //usuwane jest id bloku startowego do utworzenia łącznika i usuwany jest tryb łączenia
+        setConnectId(null);
+        optionsContext.toggleConnectingMode(false);
 
-  //tablica zgrupowanych bloków
-  const [groupedBlocks, setGroupedBlocks] = useState([]);
+        //usuwana jest grupa bloków
+        setGroupedBlocks([]);
+        optionsContext.setFormElement(null, null);
 
+        //jeżeli długość tablicy się zmieniła i tablica została zainicjalizowana to znaczy, że dodano blok
+        if (blocksArrayContext.isInitialized && window.innerWidth > 1359) {
+            optionsContext.setFormElement("block", blocksArrayContext.blocksArray[blocksArrayContext.blocksArray.length - 1]);
 
-  //czy obecnie odbywa się ruszanie blokiem
-  const [isDragging, setIsDragging] = useState(false);
+            setSelectedBlock(blocksArrayContext.blocksArray[blocksArrayContext.blocksArray.length - 1]);
+        }
 
-  //czy obecnie odbywa się wybieranie bloków do połączenia
-  const [isConnecting, setIsConnecting] = useState(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [blocksArrayContext.blocksArray.length]);
 
+    //obserwuje zamiany w długości tablicy przechowującej informacje o łącznikach
+    useEffect(() => {
+        //usuwane jest id bloku startowego do utworzenia łącznika i usuwany jest tryb łączenia
+        setConnectId(null);
+        optionsContext.toggleConnectingMode(false);
 
-  //blok którego formularz jest wyświetlany
-  const [blockFormElement, setBlockFormElement] = useState(null);
+        //usuwana jest grupa bloków
+        setGroupedBlocks([]);
+        optionsContext.setFormElement(null, null);
 
-  //łącznik którego formularz jest wyświetlany
-  const [connectorFormElement, setConnectorFormElement] = useState(null);
+        //jeżeli długość tablicy się zmieniła i tablica została zainicjalizowana to znaczy, że dodano blok
+        if (connectorsArrayContext.isInitialized && window.innerWidth > 1359) {
+            optionsContext.setFormElement("connector", connectorsArrayContext.connectorsArray[connectorsArrayContext.connectorsArray.length - 1]);
+            setSelectedBlock(null);
+        }
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [connectorsArrayContext.connectorsArray.length]);
 
-  //obserwuje zamiany w długości tablicy przechowującej informacje o blokach
-  useEffect(() => {
+    useEffect(() => {
+        const lastElement = optionsContext.changesArray[optionsContext.changesArray.length - 1];
 
-    //usuwane jest id bloku startowego do utworzenia łącznika
-    setConnectId(null);
+        if (lastElement?.type === "delete" && lastElement?.prevState.id === optionsContext.formElement.elementObject?.id) {
+            optionsContext.setFormElement(null, null);
+        }
 
-    //usuwana jest grupa bloków
-    setGroupedBlocks([]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [optionsContext.changesArray]);
 
-    //jeśli obecnie otwarty jest formularz
-    if(blockFormElement) {
+    //obserwuje czy w menu zostało wybrane łączenie bloków
+    useEffect(() => {
+        setIsConnecting(optionsContext.isConnectingModeActive);
+        if (optionsContext.isConnectingModeActive) {
+            setSelectedBlock(null);
+            setGroupedBlocks([]);
+            optionsContext.setFormElement(null, null);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [optionsContext.isConnectingModeActive]);
 
-      //sprawdzane jest czy blok dla którego otwarty jest formularz istnieje
-      let formElementIndex = blocksArrayContext.blocksArray.findIndex((element) => element.id === blockFormElement.id);
+    //funkcja wykonuje się gdy zostanie wybrany łącznik i należy wyświetlić odpowiedni formularz
+    function connectorSelectionHandler(e, id) {
+        e.preventDefault();
 
-      if(formElementIndex < 0) {
-        //jeśli blok dla którego otwarty jest formularz przestał istnieć to należy zamknąć formularz (usunięto blok dla którego otwarty był formularz)
+        const connectorObject = connectorsArrayContext.connectorsArray.find(
+            (element) => element.id === id
+        );
 
-        setBlockFormElement(null);
-        setSelectedBlock(null);
-      } else {
-        //jeśli formularz jest otworzony, a odpowiadający mu blok istnieje to otwierany jest dla najnowszego elementu w tablicy (uworzono nowy blok i należy zastąpić aktualny formularz)
-
-        setConnectorFormElement(null);
-        setBlockFormElement(blocksArrayContext.blocksArray[blocksArrayContext.blocksArray.length-1]);
-        setSelectedBlock(blocksArrayContext.blocksArray[blocksArrayContext.blocksArray.length-1]);
-      }
-    } else {
-      //jeśli formularz nie jest otworzony, to zostanie otwarty dla najnowszego bloku w tablicy (uworzono nowy blok i należy jemu otworzyć formularz)
-
-      if((blocksArrayContext.blocksArray.length - blockArrayLength) === 1) {
-        //formularz otwierany wtedy gdy nie jest to pierwsze uruchomienie
-        setConnectorFormElement(null);
-        setBlockFormElement(blocksArrayContext.blocksArray[blocksArrayContext.blocksArray.length-1]);
-        setSelectedBlock(blocksArrayContext.blocksArray[blocksArrayContext.blocksArray.length-1]);
-      }
+        optionsContext.setFormElement("connector", connectorObject);
     }
 
-    setBlockArrayLength(blocksArrayContext.blocksArray.length);
+    //funkcja wykonuje się gdy zostanie wybrany blok (poprzez naciśnięcie lewym przyciskiem myszy) i należy wyświetlić odpowiedni formularz (dodatkowo jego id jest zapisywane na wypadek przesuwania)
+    function blockSelectionHandler(e, id) {
+        //znalezienie danego elementu w tablicy bloków i zapisanie go
+        let selected = blocksArrayContext.blocksArray.find((block) => block.id === id);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [blocksArrayContext.blocksArray.length])
-  
-  //obserwuje zamiany w długości tablicy przechowującej informacje o łącznikach
-  useEffect(() => {
+        setSelectedBlock(selected);
 
-    //usuwana jest grupa bloków
-    setGroupedBlocks([]);
+        setPrevBlockPosition({top: selected.style.top, left: selected.style.left});
 
-    //jeśli obecnie otwaty jest formularz
-    if(connectorFormElement) {
+        if (groupedBlocks.length > 0) {
+            setGroupedBlocksPrev(JSON.parse(JSON.stringify(groupedBlocks)));
+        }
 
-      //sprawdzane jest czy łącznik dla którego otwarty jest formularz istnieje
-      let formElementIndex = connectorsArrayContext.connectorsArray.findIndex((element) => element.id === connectorFormElement?.id);
+        if (e.ctrlKey) {
+            //jeśli element nie jest zgrupowany to zostaje dodany do grupy
+            if (!groupedBlocks.find((element) => element.id === selected.id)) {
 
-      if(formElementIndex < 0) {
-        //jeśli blok dla którego otwarty jest formularz przestał istnieć to należy zamknąć formularz (usunięto łącznik dla którego otwarty był formularz)
+                setGroupedBlocks((prev) => {
+                    const updatedArray = [...prev, selected];
+                    return updatedArray;
+                });
+            }
 
-        setConnectorFormElement(null);
-      } else {
-        //jeśli formularz jest otworzony, a odpowiadający mu łącznik istnieje to otwierany jest dla najnowszego elementu w tablicy (uworzono nowy łącznik i należy zastąpić aktualny formularz)
-        setBlockFormElement(null);
-        setConnectorFormElement(connectorsArrayContext.connectorsArray[connectorsArrayContext.connectorsArray.length-1]);
-      }
-    } else {
-      //jeśli formularz nie jest otworzony, to zostanie otwarty dla najnowszego łącznika w tablicy (uworzono nowy łącznik i należy jemu otworzyć formularz)
+            optionsContext.setFormElement("grouped", selected);
+        } else {
+            setGroupedBlocks([]);
+            optionsContext.setFormElement(null, null);
+        }
 
-      if((connectorsArrayContext.connectorsArray.length - connectorsArrayLength) === 1) {
-        //formularz otwierany wtedy gdy nie jest to pierwsze uruchomienie
-        setBlockFormElement(null);
-        setConnectorFormElement(connectorsArrayContext.connectorsArray[connectorsArrayContext.connectorsArray.length-1]);
-      }
-    }
+        let cordinateX = e.touches ? e.touches[0].pageX : e.clientX;
+        let cordinateY = e.touches ? e.touches[0].pageY : e.clientY;
 
-    setConnectorsArrayLength(connectorsArrayContext.connectorsArray.length);
+        //zapisanie miejsca w którym blok został złapany
+        setAnchorPosition((prev) => {
+            let tmp = { ...prev };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connectorsArrayContext.connectorsArray.length])
+            tmp.x = cordinateX;
+            tmp.y = cordinateY;
 
-  //obserwuje czy w menu zostało wybrane łączenie bloków
-  useEffect(() => {
-    setIsConnecting(optionsContext.connectingMode);
-    if(optionsContext.connectingMode){
-      setBlockFormElement(null);
-      setConnectorFormElement(null);
-      setSelectedBlock(null);
-      setGroupedBlocks([]);
-    }
-  }, [optionsContext.connectingMode])
-
-  //funkcja wykonuje się gdy zostanie wybrany łącznik i należy wyświetlić odpowiedni formularz
-  function connectorSelectionHandler (e, id) {
-
-    const connectorObject = connectorsArrayContext.connectorsArray.find((element) => element.id === id);
-
-    setBlockFormElement(null);
-    setConnectorFormElement(connectorObject);
-  }
-
-  //funkcja wykonuje się gdy zostanie wybrany blok (poprzez naciśnięcie lewym przyciskiem myszy) i należy wyświetlić odpowiedni formularz (dodatkowo jego id jest zapisywane na wypadek przesuwania)
-  function blockSelectionHandler(e, id) {
-
-    e.preventDefault();
-
-    //znalezienie danego elementu w tablicy bloków i zapisanie go
-    let selected = blocksArrayContext.blocksArray.find((block) => block.id === id);
-
-    setSelectedBlock(selected);
-
-    if(e.ctrlKey) {
-
-      //jeśli element nie jest zgrupowany to zostaje dodany do grupy
-      if(!groupedBlocks.find((element) => element.id === selected.id)) {
-        setGroupedBlocks((prev) => {
-          const updatedArray = [...prev, selected]
-          return updatedArray;
+            return tmp;
         });
-      }
 
-      setBlockFormElement(null);
-    } else {
-      setGroupedBlocks([]);
+        //ustawienie obecnej pozycji kursora
+        setMousePosition((prev) => {
+            let tmp = { ...prev };
+            tmp.x = cordinateX;
+            tmp.y = cordinateY;
+
+            return tmp;
+        });
+
+        //ustawienie stanu
+        setIsDragging(true);
+        setIsConnecting(false);
+        optionsContext.toggleConnectingMode(false);
+        setConnectId(null);
+
+        if ((!e.ctrlKey && e.nativeEvent.type === "mousedown") ||e.nativeEvent.pointerType === "touch") {
+            optionsContext.setFormElement("block", selected);
+        }
     }
 
-    //zapisanie miejsca w którym blok został złapany
-    setAnchorPosition(prev => { 
-      let tmp = {...prev};
+    //gdy blok zostanie puszczony zmieniany jest stan
+    function onMouseUpHandler() {
+        if (selectedBlock && prevBlockPosition.top && prevBlockPosition.left && (selectedBlock.style.top !== prevBlockPosition.top || selectedBlock.style.left !== prevBlockPosition.left)) {
+            let prevState = [];
+            let newState = [];
 
-      tmp.x = e.clientX;
-      tmp.y = e.clientY;
- 
-      return tmp;
-    })
+            const obj = {
+                culprit: "block",
+                type: "changePosition",
+                prevState,
+                newState,
+            };
 
-    //ustawienie obecnej pozycji kursora
-    setMousePosition(prev => {
-      let tmp = {...prev};
-      tmp.x = e.clientX;
-      tmp.y = e.clientY;
+            if (groupedBlocks.length > 0) {
+                groupedBlocks.map((block, index) => {
+                    let prevStateElement = {id: block.id, position: {top: groupedBlocksPrev[index]?.style.top, left: groupedBlocksPrev[index]?.style.left}};
+                    let newStateElement = {id: block.id, position: {top: block.style.top, left: block.style.left}};
 
-      return tmp;
-    })
+                    prevState.push(prevStateElement);
+                    newState.push(newStateElement);
+                });
 
-    //ustawienie stanu
-    setIsDragging(true);
-    setIsConnecting(false);
-    optionsContext.toggleConnectingMode(false);
-    setConnectId(null);
+                obj.type = "changePositionGrouped";
+                obj.prevState = prevState;
+                obj.newState = newState;
+            } else {
+                obj.prevState = {id: selectedBlock.id, position: prevBlockPosition};
+                obj.newState = {id: selectedBlock.id, position: {top: selectedBlock.style.top, left: selectedBlock.style.left}};
+            }
 
-    if(!e.ctrlKey) {
-      setBlockFormElement(selected);
-    }
-    setConnectorFormElement(null);
-  }
-
-  //gdy blok zostanie puszczony zmieniany jest stan
-  function onMouseUpHandler() {
-    setIsDragging(false);
-    setSelectedBlock(null);
-  }
-
-  //obsługa ruszania blokiem
-  function onMouseMoveHandler(e) {
-
-    //korekcja pozycji po trybie wolnego przesuwania
-    if(!e.altKey && (selectedBlock.style.top % 12 !== 0 || selectedBlock.style.left % 12 !== 0)){
-      const gridProperPositionY = Math.round(selectedBlock.style.top/12)*12;
-      const gridProperPositionX = Math.round(selectedBlock.style.left/12)*12;
-
-      blocksArrayContext.updateBlockPosition(selectedBlock.id, {top: gridProperPositionY, left: gridProperPositionX});
-
-      //jeśli bloki są zgrupowane to należy skorygować pozycję wszystkich
-      if(e.ctrlKey) {
-        groupedBlocks.map((element) => {
-          const gridProperPositionY = Math.round(element.style.top/12)*12;
-          const gridProperPositionX = Math.round(element.style.left/12)*12;
-
-          blocksArrayContext.updateBlockPosition(element.id, {top: gridProperPositionY, left: gridProperPositionX})
-        })
-      } 
-      return;
+            optionsContext.addToChangesArray(obj);
+        }
+        setIsDragging(false);
+        setSelectedBlock(null);
     }
 
-    //ustawienie obecnej pozycji kursora
-    setMousePosition(prev => {
-      let tmp = {...prev};
-      tmp.x = e.clientX;
-      tmp.y = e.clientY;
+    //obsługa ruszania blokiem
+    function onMouseMoveHandler(e) {
+        if (!selectedBlock) return;
 
-      return tmp;
-    });
+        //korekcja pozycji po trybie wolnego przesuwania
+        if (!e.altKey && (selectedBlock.style.top % 12 !== 0 || selectedBlock.style.left % 12 !== 0)) {
+            const gridProperPositionY = Math.round(selectedBlock.style.top / 12) * 12;
+            const gridProperPositionX = Math.round(selectedBlock.style.left / 12) * 12;
 
-    //obliczenie różnicy między obecną pozycją kursora, a miejscem w którym blok został oryginalnie złapany
-    let xDifference = anchorPosition.x - mousePosition.x;
-    let yDifference = anchorPosition.y - mousePosition.y;
+            blocksArrayContext.updateBlockPosition(selectedBlock.id, {top: gridProperPositionY, left: gridProperPositionX});
 
-    let multiX = 0;
-    let multiY = 0;
+            //jeśli bloki są zgrupowane to należy skorygować pozycję wszystkich
+            if (e.ctrlKey) {
+                groupedBlocks.map((element) => {
+                    const gridProperPositionY = Math.round(element.style.top / 12) * 12;
+                    const gridProperPositionX = Math.round(element.style.left / 12) * 12;
 
-    //jeśli różnica jest większa niż szerokość komórki lub mniejsza niż jej przeciwność wtedy należy przesunąć blok
-    if(xDifference >= 12 || xDifference <= -12){
+                    blocksArrayContext.updateBlockPosition(element.id, {top: gridProperPositionY, left: gridProperPositionX});
+                });
+            }
+            return;
+        }
 
-      //obliczenie którą wielokrotnością jest różnica
-      multiX = Math.floor(Math.abs(xDifference/12));
+        let cordinateX = e.touches ? e.touches[0].pageX : e.clientX;
+        let cordinateY = e.touches ? e.touches[0].pageY : e.clientY;
 
-      if(xDifference < 0 ) {
-        multiX = multiX * (-1);
-      }
+        //ustawienie obecnej pozycji kursora
+        setMousePosition((prev) => {
+            let tmp = { ...prev };
+            tmp.x = cordinateX;
+            tmp.y = cordinateY;
 
-      multiX = 12 * multiX;
+            return tmp;
+        });
+
+        //obliczenie różnicy między obecną pozycją kursora, a miejscem w którym blok został oryginalnie złapany
+        let xDifference = anchorPosition.x - mousePosition.x;
+        let yDifference = anchorPosition.y - mousePosition.y;
+
+        let multiX = 0;
+        let multiY = 0;
+
+        //jeśli różnica jest większa niż szerokość komórki lub mniejsza niż jej przeciwność wtedy należy przesunąć blok
+        if (xDifference >= 12 || xDifference <= -12) {
+            //obliczenie którą wielokrotnością jest różnica
+            multiX = Math.floor(Math.abs(xDifference / 12));
+
+            if (xDifference < 0) {
+                multiX = multiX * -1;
+            }
+
+            multiX = 12 * multiX;
+        }
+
+        //to samo co wyżej tyle, że dla drugiej współrzędnej
+        if (yDifference >= 12 || yDifference <= -12) {
+            //obliczenie którą wielokrotnością jest różnica
+            multiY = Math.floor(Math.abs(yDifference / 12));
+
+            if (yDifference < 0) {
+                multiY = multiY * -1;
+            }
+
+            multiY = 12 * multiY;
+        }
+
+        //jeśli przyciśnięty jest klawisz alt to włączony jest tryb wolnego przesuwania
+        if (e.altKey) {
+            multiX = xDifference;
+            multiY = yDifference;
+        }
+
+        ///przesunięcie puntu kotwicznego
+        setAnchorPosition((prev) => {
+            let tmp = { ...prev };
+            tmp.x = tmp.x - multiX;
+            tmp.y = tmp.y - multiY;
+            return tmp;
+        });
+
+        let topValue = selectedBlock.style.top - multiY;
+        let leftValue = selectedBlock.style.left - multiX;
+
+        if (topValue < 0) {
+            topValue = 0;
+        } else if (topValue > 2004) {
+            topValue = 2004;
+        }
+
+        if (leftValue < 0) {
+            leftValue = 0;
+        } else if (leftValue > 2004) {
+            leftValue = 2004;
+        }
+
+        //przesunięcie bloku
+        blocksArrayContext.updateBlockPosition(selectedBlock.id, {top: topValue, left: leftValue});
+
+        //przesunięcie wszystkich zgrupowanych bloków
+        if (e.ctrlKey) {
+            groupedBlocks.map((block) => {
+                topValue = block.style.top - multiY;
+                leftValue = block.style.left - multiX;
+
+                if (topValue < 0) {
+                    topValue = 0;
+                } else if (topValue > 2004) {
+                    topValue = 2004;
+                }
+
+                if (leftValue < 0) {
+                    leftValue = 0;
+                } else if (leftValue > 2004) {
+                    leftValue = 2004;
+                }
+
+                blocksArrayContext.updateBlockPosition(block.id, {top: topValue, left: leftValue});
+            });
+        }
     }
 
-    //to samo co wyżej tyle, że dla drugiej współrzędnej
-    if(yDifference >= 12 || yDifference <= -12){
-
-      //obliczenie którą wielokrotnością jest różnica
-      multiY = Math.floor(Math.abs(yDifference/12));
-
-      if(yDifference < 0 ) {
-        multiY = multiY * (-1);
-      }
-
-      multiY = 12 * multiY;
+    //kliknięcie poza elementami powiązanymi z formularzamia powoduje zamknięcie formularzy
+    function onClickHandler(e) {
+        if (e.target.id === "gridArea") {
+            setSelectedBlock(null);
+            optionsContext.setFormElement(null, null);
+            setGroupedBlocks([]);
+        }
     }
 
-    //jeśli przyciśnięty jest klawisz alt to włączony jest tryb wolnego przesuwania
-    if(e.altKey){
-      multiX = xDifference;
-      multiY = yDifference;
+    //funkcja odpowiedzialna za połączenie dwóch bloków łącznikiem
+    function onConnectingBlocks(e, id) {
+        e.preventDefault();
+
+        if (connectId === null) {
+            setConnectId(id);
+            setIsConnecting(true);
+            optionsContext.toggleConnectingMode(true);
+            optionsContext.setFormElement(null, null);
+            setSelectedBlock(null);
+        } else if (connectId !== id) {
+            connectorsArrayContext.addNewConnector(connectId, id);
+            setConnectId(null);
+            setIsConnecting(false);
+            optionsContext.toggleConnectingMode(false);
+        } else {
+            setConnectId(null);
+            setIsConnecting(false);
+            optionsContext.toggleConnectingMode(false);
+        }
     }
 
-    ///przesunięcie puntu kotwicznego
-    setAnchorPosition(prev => { 
-      let tmp = {...prev};
-      tmp.x = tmp.x - multiX;
-      tmp.y = tmp.y - multiY;
-      return tmp;
-    })
+    return (
+        <div className={styles.container}>
+            <div id="gridArea" className={styles.gridArea} onMouseLeave={isDragging ? onMouseUpHandler : undefined} onClick={onClickHandler} onMouseUp={onMouseUpHandler}
+                onMouseMove={isDragging ? onMouseMoveHandler : undefined} onTouchEnd={onMouseUpHandler} onTouchMove={isDragging ? onMouseMoveHandler : undefined}>
+                
+                {isConnecting && <Modal />}
 
-    //przesunięcie bloku
-    blocksArrayContext.updateBlockPosition(selectedBlock.id, {top: selectedBlock.style.top - multiY, left: selectedBlock.style.left - multiX});
-    
-    if(e.ctrlKey) {
-      groupedBlocks.map((block) => {
-        blocksArrayContext.updateBlockPosition(block.id, {top: block.style.top - multiY, left: block.style.left - multiX});
-      });
-    }
+                {blocksArrayContext.blocksArray.map((block) => (
+                    <Block key={block.id} id={block.id} onLeftClick={blockSelectionHandler} onRightClick={onConnectingBlocks} block={block}
+                        isSelected={(optionsContext.formElement.elementType === "block" && optionsContext.formElement.elementObject.id === block.id) || selectedBlock?.id === block.id ? true : false}
+                        isConnectingStart={connectId && connectId === block.id} isConnecting={isConnecting} isGrouped={groupedBlocks.find((element) => element.id === block.id)}
+                    />
+                ))}
 
-  }
-
-  //kliknięcie poza elementami powiązanymi z formularzamia powoduje zamknięcie formularzy
-  function onClickHandler(e) {
-    if(e.target.id === 'gridArea') {
-      setSelectedBlock(null);
-      setBlockFormElement(null);
-      setConnectorFormElement(null);
-    }
-  }
-
-  //funkcja odpowiedzialna za połączenie dwóch bloków łącznikiem
-  function onConnectingBlocks(e, id) {
-    e.preventDefault();
-
-    if(connectId === null) {
-      setConnectId(id);
-      setIsConnecting(true);
-      optionsContext.toggleConnectingMode(true);
-      setBlockFormElement(null);
-      setConnectorFormElement(null);
-      setSelectedBlock(null);
-    } else if (connectId !== id) {
-
-      connectorsArrayContext.addNewConnector(connectId, id);
-
-      setConnectId(null);
-      setIsConnecting(false);
-      optionsContext.toggleConnectingMode(false);
-
-    } else {
-      setConnectId(null);
-      setIsConnecting(false);
-      optionsContext.toggleConnectingMode(false);
-    }
-    
-  }
-
-  ///////////////////////////////////////////////////
-  //funkcja testowa do sprawdzania zajętości local storage
-  // function localStorage () {
-  //   let value = '';
-
-  //   for(let key in window.localStorage){
-  //       if(window.localStorage.hasOwnProperty(key)){
-  //         value += window.localStorage[key];
-  //       }
-  //   }
-
-  //   return value ? (3 + ((value.length*16)/(8*1024))) + ' KB' : 'Puste (0 KB)';
-  // }
-
-  // console.log(localStorage())
-
-  /////////////////////////////////////////////////////
-
-  return (
-
-    <GridLines id="gridArea" className={styles.gridArea} cellWidth={60} strokeWidth={1} cellWidth2={12} onMouseUp={onMouseUpHandler} onMouseMove={isDragging ? onMouseMoveHandler : undefined}
-      onClick={onClickHandler}>
-
-      {isConnecting && <Modal />}
-
-      {blocksArrayContext.blocksArray.map((block) => (
-          <Block key={block.id} id={block.id} onLeftClick={blockSelectionHandler} onRightClick={onConnectingBlocks} block={block} 
-            isSelected={blockFormElement && (blockFormElement.id === block.id) ? true : false} isConnectingStart={connectId && (connectId === block.id)}
-            isConnecting={isConnecting} isGrouped={groupedBlocks.find((element) => element.id === block.id)}/>
-      ))}
-
-      {connectorsArrayContext.connectorsArray.map((connector) => (
-        <Connector key={connector.id} connector={connector} onSelect={connectorSelectionHandler} isConnecting={isConnecting}/>
-      ))}
-
-      {blockFormElement && <FormBlock key={blockFormElement.id} blockObject={blockFormElement} type="individual"/>}
-
-      {groupedBlocks.length > 0 && <FormBlock key={groupedBlocks[0].id} blockObject={groupedBlocks[0]} blocksArray={groupedBlocks} type="grouped"/>}
-
-      {connectorFormElement && <FormConnector key={connectorFormElement.id} elementObject={connectorFormElement} type="individual"/>}
-
-    </GridLines>
-  )
+                {connectorsArrayContext.connectorsArray.map((connector) => (
+                    <Connector key={connector.id} connector={connector} onSelect={connectorSelectionHandler} isConnecting={isConnecting}/>
+                ))}
+            </div>
+        </div>
+    );
 }

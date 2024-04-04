@@ -1,46 +1,46 @@
 export const DEFAULT_BLOCKS_STYLES = [
     {
-        type: 'default',
+        type: "default",
         style: {
+            display: "flex",
             autoSize: true,
             widthValue: 120,
             heightValue: 60,
 
-            width: 'fit-content',
-            height: 'fit-content',
-            top: 60,
-            left: 360,
-            
-            color: '#000000',
-            backgroundColor: '#ffffff',
-            outline: '',
-            borderWidth: '0px',
-            borderStyle: 'solid',
-            borderColor: '#c2c2c2'
-        }
+            width: "fit-content",
+            height: "fit-content",
+            top: 12,
+            left: 12,
+
+            color: "#000000",
+            backgroundColor: "#ffffff",
+            outline: "",
+            borderWidth: "0px",
+            borderStyle: "solid",
+            borderColor: "#c2c2c2",
+            whiteSpace: "pre",
+        },
     },
     {
-        type: 'graniczny',
-        style : {
-            borderRadius: 30
-        }
-    },
-    {
-        type: 'wejscia-wyjscia',
+        type: "graniczny",
         style: {
-            transform: 'skew(-10deg)',
-        }
+            borderRadius: 30,
+        },
     },
     {
-        type: 'operacyjny',
+        type: "wejscia-wyjscia",
         style: {
-            
-        }
+            transform: "skew(-10deg)",
+        },
     },
     {
-        type: 'warunkowy',
+        type: "operacyjny",
+        style: {},
+    },
+    {
+        type: "warunkowy",
         style: {
-            transform: 'scaleY(0.4) rotateZ(45deg)'
-        }
-    }
-]
+            transform: "scaleY(0.4) rotateZ(45deg)",
+        },
+    },
+];
