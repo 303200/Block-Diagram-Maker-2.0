@@ -23,15 +23,11 @@ export const DEFAULT_BLOCKS_STYLES = [
     },
     {
         type: "graniczny",
-        style: {
-            borderRadius: 30,
-        },
+        style: {},
     },
     {
         type: "wejscia-wyjscia",
-        style: {
-            transform: "skew(-10deg)",
-        },
+        style: {},
     },
     {
         type: "operacyjny",
@@ -39,8 +35,6 @@ export const DEFAULT_BLOCKS_STYLES = [
     },
     {
         type: "warunkowy",
-        style: {
-            transform: "scaleY(0.4) rotateZ(45deg)",
-        },
+        style: {},
     },
 ];

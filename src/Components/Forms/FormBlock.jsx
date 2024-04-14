@@ -204,7 +204,7 @@ export default function Form({ blockObject, type, blocksArray }) {
 
     useEffect(() => {
         setBlocksArrayPrevState(JSON.parse(JSON.stringify(blocksArray)));
-    }, [blocksArray]);
+    }, [blocksArray, blockObject.style, blockObject.type]);
 
     useEffect(() => {
         setWidth(blockObject.style.widthValue);
@@ -223,10 +223,7 @@ export default function Form({ blockObject, type, blocksArray }) {
             let prevState = [];
             let newState = [];
 
-            if (
-                e.target.name === "autoSize" ||
-                e.target.name === "borderStyle"
-            ) {
+            if (e.target.name === "autoSize" || e.target.name === "borderStyle") {
                 blocksArrayPrevState.map((element) => {
                     let prevStateElement = {id: element.id, styleName: e.target.name, styleValue: element.style[e.target.name], isValidValue: true};
                     let newStateElement = {id: element.id, styleName: e.target.name, styleValue: e.target.type === "checkbox" ? e.target.checked : e.target.value, isValidValue};
@@ -241,6 +238,29 @@ export default function Form({ blockObject, type, blocksArray }) {
                     prevState,
                     newState,
                 });
+            } else if(e.target.name === 'blockType') {
+                blocksArrayPrevState.map((element) => {
+                    let prevStateElement = {id: element.id, value: element.type, width: element.style.width, height: element.style.height};
+                    let newStateElement = {id: element.id, value: e.target.value}
+
+                    prevState.push(prevStateElement);
+                    newState.push(newStateElement);
+                });
+
+                const obj = {
+                    culprit: "block",
+                    type: "changeTypeGrouped",
+                    prevState,
+                    newState,
+                };
+
+                optionsContext.addToChangesArray(obj);
+
+                blocksArray.map((element) => {
+                    blocksArrayContext.changeBlockType(element.id, e.target.value);
+                });
+
+                return;
             }
 
             if (e.target.name !== "width" && e.target.name !== "height") {
@@ -273,6 +293,22 @@ export default function Form({ blockObject, type, blocksArray }) {
                 optionsContext.addToChangesArray(obj);
 
                 blocksArrayContext.updateBlockStyles(blockObject.id, e.target.name, e.target.type === "checkbox" ? e.target.checked : e.target.value, isValidValue);
+            } else if(e.target.name === 'blockType') {
+                const prevState = {id: blockObject.id, value: blockObject.type, width: blockObject.style.width, height: blockObject.style.height};
+                const newState = {id: blockObject.id, value: e.target.value}
+
+                const obj = {
+                    culprit: "block",
+                    type: "changeType",
+                    prevState,
+                    newState,
+                };
+
+                optionsContext.addToChangesArray(obj);
+
+                blocksArrayContext.changeBlockType(blockObject.id, e.target.value);
+
+                return;
             }
 
             if (e.target.name !== "width" && e.target.name !== "height") {
@@ -286,6 +322,9 @@ export default function Form({ blockObject, type, blocksArray }) {
     }
 
     function inputSaveHandler(e, isValidValue = true) {
+
+        e.target.blur();
+
         let prevState = [];
         let newState = [];
 
@@ -410,13 +449,13 @@ export default function Form({ blockObject, type, blocksArray }) {
                     <div className={styles.inputLabel}>
                         <label>Szerokość: </label>
                         <input name="width" type="number" value={width} onChange={(e) => optionsChangeHandler(e, false)} onBlur={(e) => inputSaveHandler(e, false)}
-                            onKeyDown={(e) => e.key === "Enter" ? inputSaveHandler(e) : undefined} disabled={blockObject.style.autoSize}
+                            onKeyDown={(e) => e.key === "Enter" ? inputSaveHandler(e, false) : undefined} disabled={blockObject.style.autoSize}
                         />
                     </div>
                     <div className={styles.inputLabel}>
                         <label>Wysokość:</label>
                         <input name="height" type="number" value={height} onChange={(e) => optionsChangeHandler(e, false)} onBlur={(e) => inputSaveHandler(e, false)}
-                            onKeyDown={(e) => e.key === "Enter" ? inputSaveHandler(e) : undefined} disabled={blockObject.style.autoSize ||blockObject.type === "warunkowy"}
+                            onKeyDown={(e) => e.key === "Enter" ? inputSaveHandler(e, false) : undefined} disabled={blockObject.style.autoSize ||blockObject.type === "warunkowy"}
                         />
                     </div>
                 </div>
@@ -439,7 +478,8 @@ export default function Form({ blockObject, type, blocksArray }) {
                 <div className={styles.element}>
                     <div className={styles.inputLabel}>
                         <label>Ramka:</label>
-                        <input name="borderWidth" type="number" min={0} value={blockObject.style.borderWidth.slice(0, -2)} onChange={(e) => optionsChangeHandler(e, false)} onBlur={(e) => inputSaveHandler(e, false)}/>
+                        <input name="borderWidth" type="number" min={0} value={blockObject.style.borderWidth.slice(0, -2)} onChange={(e) => optionsChangeHandler(e, false)} onBlur={(e) => inputSaveHandler(e, false)} 
+                            onKeyDown={(e) => e.key === "Enter" ? inputSaveHandler(e, false) : undefined}/>
                     </div>
                     <div className={styles.inputLabel}>
                         <label>Kolor:</label>
@@ -458,6 +498,21 @@ export default function Form({ blockObject, type, blocksArray }) {
                     </div>
                 </div>
             </div>
+            {type !== "default" && (
+                <div className={styles.section}>
+                    <div className={styles.element}>
+                        <div className={`${styles.inputLabel} ${styles.inputLabelSpecial}`}>
+                            <label>Typ bloku:</label>
+                            <select name="blockType" value={blockObject.type} onChange={optionsChangeHandler}>
+                                <option value="graniczny">Blok graniczny</option>
+                                <option value="wejscia-wyjscia">Blok wejścia-wyjścia</option>
+                                <option value="operacyjny">Blok operacyjny</option>
+                                <option value="warunkowy">Blok warunkowy</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            )}
             {type === "individual" && (
                 <div className={styles.section}>
                     <div className={styles.button}>

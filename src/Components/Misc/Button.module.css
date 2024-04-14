@@ -4,6 +4,10 @@
     display: flex;
 }
 
-.container:hover {
+.active:hover {
     cursor: pointer;
+}
+
+.disabled:hover {
+    cursor: default;
 }

@@ -27,6 +27,18 @@
     cursor: move;
 }
 
+.graniczny{
+    border-radius: 30px;
+}
+
+.wejscia-wyjscia{
+    transform: skew(-10deg);
+}
+
+.warunkowy{
+    transform: scaleY(0.4) rotateZ(45deg);
+}
+
 .connectingContainer:hover {
     cursor: pointer;
 }

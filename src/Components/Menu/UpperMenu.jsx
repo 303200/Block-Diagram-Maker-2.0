@@ -35,7 +35,7 @@ export default function UpperMenu() {
                                 <Button type="upload" />
                             </div>
                         </label>
-                        <input id="file" type="file" />
+                        <input id="file" type="file" onChange={(e) => window.confirm("Wczytanie projektu nadpisze obecny projekt. Do obecnego projektu, bez kopii zapasowej, nie będzie można wrócić! Kontunuować?") ? uploadHandler(e) : undefined}/>
                     </div>
                     <div className={`${styles.option} ${styles.expandedOption}`} onClick={() => window.confirm("Tej operacji nie można cofnąć! Projekt zostanie usunięty. Kontynuować?") ? deleteHandler() : undefined}>
                         <div className={styles.optionString}> 
@@ -43,17 +43,29 @@ export default function UpperMenu() {
                         </div>
                         <Button type="trash" />
                     </div>
-                    <div className={styles.option} onClick={changesContext.undo}>
+                    <div className={`${styles.option} ${optionsContext.changesArrayPointer === 0 ? styles.disabledOption : styles.activeOption}`} onClick={changesContext.undo}>
                         <div className={`${styles.optionString} ${optionsContext.changesArrayPointer === 0 ? styles.disabledString : undefined}`}>
                             Cofnij
                         </div>
                         <Button type="back" isDisabled={optionsContext.changesArrayPointer === 0}/>
                     </div>
-                    <div className={styles.option} onClick={changesContext.redo}>
+                    <div className={`${styles.option} ${optionsContext.changesArrayPointer === optionsContext.changesArray.length ? styles.disabledString : styles.activeOption}`} onClick={changesContext.redo}>
                         <div className={`${styles.optionString} ${optionsContext.changesArrayPointer === optionsContext.changesArray.length ? styles.disabledString : undefined}`}>   
                             Powtórz
                         </div>
                         <Button type="forward" isDisabled={optionsContext.changesArrayPointer === optionsContext.changesArray.length}/>
+                    </div>
+                    <div className={`${styles.option} ${optionsContext.zoom < 0.55 ? styles.disabledOption : styles.activeOption}`} onClick={() => optionsContext.modifyZoomLevel('zoomOut')}>
+                        <div className={`${styles.optionString} ${optionsContext.zoom < 0.55 ? styles.disabledString : undefined}`}>   
+                            Oddal
+                        </div>
+                        <Button type="zoomout" isDisabled={optionsContext.zoom < 0.55}/>
+                    </div>
+                    <div className={`${styles.option} ${optionsContext.zoom === 1 ? styles.disabledOption : styles.activeOption}`} onClick={() => optionsContext.modifyZoomLevel('zoomIn')}>
+                        <div className={`${styles.optionString} ${optionsContext.zoom === 1 ? styles.disabledString : undefined}`}>   
+                            Powiększ
+                        </div>
+                        <Button type="zoomin" isDisabled={optionsContext.zoom === 1}/>
                     </div>
                 </div>
             </div>

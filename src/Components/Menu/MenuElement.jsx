@@ -30,7 +30,7 @@ export default function MenuElement({ title, elementType }) {
                             <Button onClick={() => blocksArrayContext.addNewBlock(elementType)} type="plus"/>
                     )}
                     {elementType === "connector" && !optionsContext.isConnectingModeActive && (
-                            <Button type="plus" onClick={() => optionsContext.toggleConnectingMode(true)}/>
+                            <Button type="plus" onClick={() => blocksArrayContext.blocksArray.length > 1 ? optionsContext.toggleConnectingMode(true) : undefined} isDisabled={blocksArrayContext.blocksArray.length < 2}/>
                     )}
                     {elementType === "connector" && optionsContext.isConnectingModeActive && (
                             <Button type="X" onClick={() => optionsContext.toggleConnectingMode(false)}/>

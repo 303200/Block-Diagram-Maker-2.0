@@ -8,6 +8,7 @@ export const OptionsContext = createContext({
     changesArrayPointer: Number,
     isConnectingModeActive: Boolean,
     isMainMenuVisible: Boolean,
+    zoom: Number,
     setProjectName: () => {},
     setFormElement: () => {},
     toggleConnectingMode: () => {},
@@ -15,6 +16,7 @@ export const OptionsContext = createContext({
     addToChangesArray: () => {},
     undo: () => {},
     redo: () => {},
+    modifyZoomLevel: () => {}
 });
 
 function optionsReducer(state, action) {
@@ -103,6 +105,21 @@ function optionsReducer(state, action) {
             ...state,
             changesArrayPointer: newValue
         };
+    } else if (action.type === 'ZOOM'){
+        let zoomValue = state.zoom;
+
+        if(action.payload.type === 'zoomIn' && zoomValue < 1){
+
+            return{
+                ...state,
+                zoom: zoomValue + 0.05 > 1 ? 1 : zoomValue + 0.05
+            }
+        } else if(action.payload.type === 'zoomOut' && zoomValue > 0.55){
+            return{
+                ...state,
+                zoom: zoomValue - 0.05 < 0.55 ? 0.55 : zoomValue - 0.05
+            }
+        }
     }
 
     return state;
@@ -110,7 +127,7 @@ function optionsReducer(state, action) {
 
 export default function OptionsContextProvider({ children, ...restProps }) {
     const [optionsState, optionsDispatch] = useReducer(optionsReducer, {projectName: "", formElement: {}, isConnectingModeActive: false, isMainMenuVisible: window.innerWidth < 1360 ? false : true,
-        changesArray: [], changesArrayPointer: 0});
+        changesArray: [], changesArrayPointer: 0, zoom: 0.9});
 
     useEffect(() => {
         const currentProject = localStorage.getItem("currentProject");
@@ -197,6 +214,15 @@ export default function OptionsContextProvider({ children, ...restProps }) {
         });
     }
 
+    function modifyZoomLevelHandler(type) {
+        optionsDispatch({
+            type: 'ZOOM',
+            payload: {
+                type
+            }
+        })
+    }
+
     const ctxValue = {
         projectName: optionsState.projectName,
         formElement: optionsState.formElement,
@@ -204,6 +230,7 @@ export default function OptionsContextProvider({ children, ...restProps }) {
         changesArrayPointer: optionsState.changesArrayPointer,
         isConnectingModeActive: optionsState.isConnectingModeActive,
         isMainMenuVisible: optionsState.isMainMenuVisible,
+        zoom: optionsState.zoom,
         setProjectName: setProjectNameHandler,
         setFormElement: setFormElementHandler,
         toggleConnectingMode: toggleConnectingModeHandler,
@@ -211,6 +238,7 @@ export default function OptionsContextProvider({ children, ...restProps }) {
         addToChangesArray: addToChangesArrayHandler,
         undo: undoHandler,
         redo: redoHandler,
+        modifyZoomLevel: modifyZoomLevelHandler,
     };
 
     return (

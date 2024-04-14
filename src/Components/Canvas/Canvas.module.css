@@ -5,8 +5,8 @@
 
 .gridArea {
     position: relative;
-    height: 2064px;
-    width: 2064px;
+    height: 2664px;
+    width: 2664px;
     background-size: 12px 12px;
     background-image: linear-gradient(to right, #e6e7e7 1px, transparent 1px), linear-gradient(to bottom, #e6e7e7 1px, transparent 1px);
 }

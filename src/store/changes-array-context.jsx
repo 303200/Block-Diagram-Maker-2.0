@@ -21,15 +21,24 @@ export default function ChangesContextProvider({ children, ...restProps }) {
 
     const [isY, setIsY] = useState(false);
 
+    const [isC, setIsC] = useState(false);
+    
+    const [isV, setIsV] = useState(false);
+
     useEffect(() => {
         function keyDownHandler(e) {
+
             if (e.keyCode === 17) {
                 setIsCtrl(true);
-            } else if (e.keyCode === 90) {
+            } else if (e.keyCode === 90 && e.key !== 'ż' && e.key !== 'Ż') {
                 setIsZ(true);
             } else if (e.keyCode === 89) {
                 setIsY(true);
-            }
+            } else if (e.keyCode === 67 && e.key !== 'ć' && e.key !== 'Ć') {
+                setIsC(true);
+            } else if (e.keyCode === 86) {
+                setIsV(true);
+            }  
         }
 
         function keyUpHandler(e) {
@@ -39,7 +48,11 @@ export default function ChangesContextProvider({ children, ...restProps }) {
                 setIsZ(false);
             } else if (e.keyCode === 89) {
                 setIsY(false);
-            }
+            } else if (e.keyCode === 67) {
+                setIsC(false);
+            } else if (e.keyCode === 86) {
+                setIsV(false);
+            } 
         }
 
         document.addEventListener("keydown", keyDownHandler);
@@ -54,14 +67,23 @@ export default function ChangesContextProvider({ children, ...restProps }) {
     useEffect(() => {
         if (isCtrl && isZ) {
             undoHandler();
-        } else if ((isCtrl, isY)) {
+        } else if (isCtrl && isY) {
             redoHandler();
+        } else if (isCtrl && isC) {
+            //
+        } else if (isCtrl && isV) {
+            //
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isCtrl, isZ, isY]);
+    }, [isCtrl]);
 
     function undoHandler() {
         if (optionsContext.changesArrayPointer > 0) {
+
+            if(optionsContext.isConnectingModeActive) {
+                return;
+            }
+
             optionsContext.undo();
 
             const changeObj = optionsContext.changesArray[optionsContext.changesArrayPointer - 1];
@@ -69,7 +91,7 @@ export default function ChangesContextProvider({ children, ...restProps }) {
             if (changeObj.culprit === "block") {
                 switch (changeObj.type) {
                     case "add":
-                        if(changeObj.prevState.id === optionsContext.formElement.elementObject.id){
+                        if(changeObj.prevState.id === optionsContext.formElement.elementObject?.id){
                             optionsContext.setFormElement(null, null);
                         }
                         blocksArrayContext.updateBlockStyles(changeObj.prevState.id, changeObj.prevState.styleName, changeObj.prevState.styleValue, changeObj.prevState.isValidValue);
@@ -96,13 +118,25 @@ export default function ChangesContextProvider({ children, ...restProps }) {
                             blocksArrayContext.updateBlockPosition(state.id, state.position);
                         });
                         break;
+                    case "changeType":
+                        blocksArrayContext.changeBlockType(changeObj.prevState.id, changeObj.prevState.value);
+                        blocksArrayContext.updateBlockStyles(changeObj.prevState.id, 'width', changeObj.prevState.width, true);
+                        blocksArrayContext.updateBlockStyles(changeObj.prevState.id, 'height', changeObj.prevState.height, true);
+                        break;
+                    case "changeTypeGrouped":
+                        changeObj.prevState.map((state) => {
+                            blocksArrayContext.changeBlockType(state.id, state.value);
+                            blocksArrayContext.updateBlockStyles(state.id, 'width', state.width, true);
+                            blocksArrayContext.updateBlockStyles(state.id, 'height', state.height, true);
+                        });
+                        break;
                     default:
                         break;
                 }
             } else if (changeObj.culprit === "connector") {
                 switch (changeObj.type) {
                     case "add":
-                        if(changeObj.prevState.id === optionsContext.formElement.elementObject.id){
+                        if(changeObj.prevState.id === optionsContext.formElement.elementObject?.id){
                             optionsContext.setFormElement(null, null);
                         }
                         connectorsArrayContext.updateConnectorStyle(changeObj.prevState.id, changeObj.prevState.styleName, changeObj.prevState.styleValue, true);
@@ -119,11 +153,17 @@ export default function ChangesContextProvider({ children, ...restProps }) {
             }
 
             blocksArrayContext.toggleUserModificationIndicator(false);
+            connectorsArrayContext.toggleUserModificationIndicator(false);
         }
     }
 
     function redoHandler() {
         if (optionsContext.changesArrayPointer !== optionsContext.changesArray.length) {
+
+            if(optionsContext.isConnectingModeActive) {
+                return;
+            }
+
             optionsContext.redo();
 
             const changeObj = optionsContext.changesArray[optionsContext.changesArrayPointer];
@@ -155,6 +195,14 @@ export default function ChangesContextProvider({ children, ...restProps }) {
                             blocksArrayContext.updateBlockPosition(state.id, state.position);
                         });
                         break;
+                    case "changeType":
+                        blocksArrayContext.changeBlockType(changeObj.newState.id, changeObj.newState.value);
+                        break;
+                    case "changeTypeGrouped":
+                        changeObj.newState.map((state) => {
+                            blocksArrayContext.changeBlockType(state.id, state.value);
+                        });
+                        break;
                     default:
                         break;
                 }
@@ -175,6 +223,7 @@ export default function ChangesContextProvider({ children, ...restProps }) {
             }
 
             blocksArrayContext.toggleUserModificationIndicator(false);
+            connectorsArrayContext.toggleUserModificationIndicator(false);
         }
     }
 

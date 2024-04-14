@@ -21,8 +21,12 @@
     align-items: center;
 }
 
-.option:hover {
+.activeOption:hover {
     cursor: pointer;
+}
+
+.disabledOption{
+    cursor: default;
 }
 
 .optionString {

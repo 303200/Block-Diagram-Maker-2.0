@@ -8,6 +8,7 @@ import { OptionsContext } from "../../store/options-context";
 import Modal from "../Misc/Modal";
 
 export default function Canvas() {
+
     //kontekst przechowujący informacje o tablicy bloków
     const blocksArrayContext = useContext(BlocksArrayContext);
 
@@ -43,6 +44,9 @@ export default function Canvas() {
 
     //czy obecnie odbywa się wybieranie bloków do połączenia
     const [isConnecting, setIsConnecting] = useState(false);
+
+    //szerokość komórki siatki
+    const step = 12;
 
     //obserwuje zamiany w długości tablicy przechowującej informacje o blokach
     useEffect(() => {
@@ -218,17 +222,17 @@ export default function Canvas() {
         if (!selectedBlock) return;
 
         //korekcja pozycji po trybie wolnego przesuwania
-        if (!e.altKey && (selectedBlock.style.top % 12 !== 0 || selectedBlock.style.left % 12 !== 0)) {
-            const gridProperPositionY = Math.round(selectedBlock.style.top / 12) * 12;
-            const gridProperPositionX = Math.round(selectedBlock.style.left / 12) * 12;
+        if (!e.altKey && (selectedBlock.style.top % step !== 0 || selectedBlock.style.left % step !== 0)) {
+            const gridProperPositionY = Math.round(selectedBlock.style.top / step) * step;
+            const gridProperPositionX = Math.round(selectedBlock.style.left / step) * step;
 
             blocksArrayContext.updateBlockPosition(selectedBlock.id, {top: gridProperPositionY, left: gridProperPositionX});
 
             //jeśli bloki są zgrupowane to należy skorygować pozycję wszystkich
             if (e.ctrlKey) {
                 groupedBlocks.map((element) => {
-                    const gridProperPositionY = Math.round(element.style.top / 12) * 12;
-                    const gridProperPositionX = Math.round(element.style.left / 12) * 12;
+                    const gridProperPositionY = Math.round(element.style.top / step) * step;
+                    const gridProperPositionX = Math.round(element.style.left / step) * step;
 
                     blocksArrayContext.updateBlockPosition(element.id, {top: gridProperPositionY, left: gridProperPositionX});
                 });
@@ -256,27 +260,27 @@ export default function Canvas() {
         let multiY = 0;
 
         //jeśli różnica jest większa niż szerokość komórki lub mniejsza niż jej przeciwność wtedy należy przesunąć blok
-        if (xDifference >= 12 || xDifference <= -12) {
+        if (xDifference >= step || xDifference <= ((-1)*step)) {
             //obliczenie którą wielokrotnością jest różnica
-            multiX = Math.floor(Math.abs(xDifference / 12));
+            multiX = Math.floor(Math.abs(xDifference / step));
 
             if (xDifference < 0) {
                 multiX = multiX * -1;
             }
 
-            multiX = 12 * multiX;
+            multiX = step * multiX;
         }
 
         //to samo co wyżej tyle, że dla drugiej współrzędnej
-        if (yDifference >= 12 || yDifference <= -12) {
+        if (yDifference >= step || yDifference <= ((-1)*-step)) {
             //obliczenie którą wielokrotnością jest różnica
-            multiY = Math.floor(Math.abs(yDifference / 12));
+            multiY = Math.floor(Math.abs(yDifference / step));
 
             if (yDifference < 0) {
                 multiY = multiY * -1;
             }
 
-            multiY = 12 * multiY;
+            multiY = step * multiY;
         }
 
         //jeśli przyciśnięty jest klawisz alt to włączony jest tryb wolnego przesuwania
@@ -288,8 +292,8 @@ export default function Canvas() {
         ///przesunięcie puntu kotwicznego
         setAnchorPosition((prev) => {
             let tmp = { ...prev };
-            tmp.x = tmp.x - multiX;
-            tmp.y = tmp.y - multiY;
+            tmp.x = tmp.x - multiX*optionsContext.zoom;
+            tmp.y = tmp.y - multiY*optionsContext.zoom;
             return tmp;
         });
 
@@ -298,14 +302,14 @@ export default function Canvas() {
 
         if (topValue < 0) {
             topValue = 0;
-        } else if (topValue > 2004) {
-            topValue = 2004;
+        } else if (topValue > 2604) {
+            topValue = 2604;
         }
 
         if (leftValue < 0) {
             leftValue = 0;
-        } else if (leftValue > 2004) {
-            leftValue = 2004;
+        } else if (leftValue > 2604) {
+            leftValue = 2604;
         }
 
         //przesunięcie bloku
@@ -319,14 +323,14 @@ export default function Canvas() {
 
                 if (topValue < 0) {
                     topValue = 0;
-                } else if (topValue > 2004) {
-                    topValue = 2004;
+                } else if (topValue > 2604) {
+                    topValue = 2604;
                 }
 
                 if (leftValue < 0) {
                     leftValue = 0;
-                } else if (leftValue > 2004) {
-                    leftValue = 2004;
+                } else if (leftValue > 2604) {
+                    leftValue = 2604;
                 }
 
                 blocksArrayContext.updateBlockPosition(block.id, {top: topValue, left: leftValue});
@@ -367,7 +371,7 @@ export default function Canvas() {
 
     return (
         <div className={styles.container}>
-            <div id="gridArea" className={styles.gridArea} onMouseLeave={isDragging ? onMouseUpHandler : undefined} onClick={onClickHandler} onMouseUp={onMouseUpHandler}
+            <div id="gridArea" style={{zoom: optionsContext.zoom}} className={styles.gridArea} onMouseLeave={isDragging ? onMouseUpHandler : undefined} onClick={onClickHandler} onMouseUp={onMouseUpHandler}
                 onMouseMove={isDragging ? onMouseMoveHandler : undefined} onTouchEnd={onMouseUpHandler} onTouchMove={isDragging ? onMouseMoveHandler : undefined}>
                 
                 {isConnecting && <Modal />}

@@ -16,6 +16,7 @@ export const BlocksArrayContext = createContext({
     deleteBlock: () => {},
     updateDefaultCustomStyles: () => {},
     updateBlockStyles: () => {},
+    changeBlockType: () => {},
 });
 
 function blocksArrayReducer(state, action) {
@@ -188,6 +189,17 @@ function blocksArrayReducer(state, action) {
         return {
             ...state,
             wasModifiedByUser: action.payload.value,
+        };
+    } else if (action.type === "CHANGE_BLOCK_TYPE") {
+        let updatedArray = [...state.blocksArray];
+
+        let updatedElement = updatedArray.find((element) => element.id === action.payload.blockId);
+
+        updatedElement.type = action.payload.value;
+
+        return {
+            ...state,
+            blocksArray: updatedArray,
         };
     }
 
@@ -403,6 +415,16 @@ export default function BlocksArrayContextProvider({ children, ...restProps }) {
         });
     }
 
+    function changeBlockTypeHandler(blockId, value){
+        blocksArrayDispatch({
+            type: "CHANGE_BLOCK_TYPE",
+            payload: {
+                blockId,
+                value
+            }
+        })
+    }
+
     const ctxValue = {
         blocksArray: blocksArrayState.blocksArray,
         customDefaultStyles: blocksArrayState.customDefaultStyles,
@@ -415,6 +437,7 @@ export default function BlocksArrayContextProvider({ children, ...restProps }) {
         deleteBlock: deleteBlockHandler,
         updateDefaultCustomStyles: updateDefaultStylesHandler,
         updateBlockStyles: updateBlockStylesHandler,
+        changeBlockType: changeBlockTypeHandler,
     };
 
     return (

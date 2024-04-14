@@ -67,7 +67,7 @@ export default function Block({block, onLeftClick, onRightClick, isSelected, isC
 
     return (
         <div ref={blockRef} id={block.id} style={block.style} className={`${styles.container} ${isSelected ? styles.selected : undefined} 
-            ${isConnectingStart ? styles.connecting : undefined} ${isConnecting ? styles.connectingContainer : undefined} ${isGrouped ? styles.grouped : undefined}`}
+            ${isConnectingStart ? styles.connecting : undefined} ${isConnecting ? styles.connectingContainer : undefined} ${isGrouped ? styles.grouped : undefined} ${styles[block.type]}`}
             onMouseDown={onMouseDownHandler} onContextMenu={onContexMenuHandler} onClick={onClickHandler} onTouchStart={onTouchStartHandler}>
             <div className={`${block.type === "wejscia-wyjscia" ? styles.insideSkew : undefined} ${block.type === "warunkowy" ? styles.insideRotate : undefined}`}>
                 {block.content}

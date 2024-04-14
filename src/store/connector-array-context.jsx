@@ -7,6 +7,8 @@ export const ConnectorsArrayContext = createContext({
     connectorsArray: [],
     customDefaultStyles: [],
     isInitialized: Boolean,
+    wasModifiedByUser: Boolean,
+    toggleUserModificationIndicator: () => {},
     addNewConnector: () => {},
     deleteConnector: () => {},
     updateDefaultCustomStyles: () => {},
@@ -132,13 +134,18 @@ function connectorsArrayReducer(state, action) {
             ...state,
             connectorsArray: updatedArray,
         };
+    } else if (action.type === "USER_MODIFICATION") {
+        return {
+            ...state,
+            wasModifiedByUser: action.payload.value,
+        };
     }
 
     return state;
 }
 
 export default function ConnectorsArrayContextProvider({children, ...restProps}) {
-    const [connectorsArrayState, connectorsArrayDispatch] = useReducer(connectorsArrayReducer, { connectorsArray: [], customDefaultStyles: [], isInitialized: false });
+    const [connectorsArrayState, connectorsArrayDispatch] = useReducer(connectorsArrayReducer, { connectorsArray: [], customDefaultStyles: [], isInitialized: false, wasModifiedByUser: true });
 
     const optionsContext = useContext(OptionsContext);
 
@@ -309,10 +316,21 @@ export default function ConnectorsArrayContextProvider({children, ...restProps})
         });
     }
 
+    function toggleUserModificationIndicatorHandler(value) {
+        connectorsArrayDispatch({
+            type: "USER_MODIFICATION",
+            payload: {
+                value,
+            },
+        });
+    }
+
     const ctxValue = {
         connectorsArray: connectorsArrayState.connectorsArray,
         customDefaultStyles: connectorsArrayState.customDefaultStyles,
         isInitialized: connectorsArrayState.isInitialized,
+        wasModifiedByUser: connectorsArrayState.wasModifiedByUser,
+        toggleUserModificationIndicator: toggleUserModificationIndicatorHandler,
         addNewConnector: addNewConnectorHandler,
         deleteConnector: deleteConnectorHandler,
         updateDefaultCustomStyles: updateDefaultCustomStylesHandler,

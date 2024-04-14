@@ -23,45 +23,104 @@ export default function FormConnector({ elementObject, type }) {
     const [middleLabelStyleMarginTop, setMiddleLabelStyleMarginTop] = useState(elementObject.style.middleLabelStyle.marginTop);
 
     useEffect(() => {
-        if (type !== "default" && optionsContext.changesArrayPointer === optionsContext.changesArray.length) {
+        if (type !== "default") {
             let timer = setTimeout(() => {
-                let prevState;
-                let newState;
-
-                if ((headColor === elementObject.style.headColor && tailColor === elementObject.style.tailColor && lineColor === elementObject.style.lineColor) || elementObject.id !== connectorId) {
-                    return;
-                } else if (headColor !== elementObject.style.headColor) {
-                    prevState = {id: elementObject.id, styleName: "headColor", styleValue: headColor, isValidValue: true};
-                    newState = {id: elementObject.id, styleName: "headColor", styleValue: elementObject.style.headColor, isValidValue: true};
-                    setHeadColor(elementObject.style.headColor);
-                } else if (tailColor !== elementObject.style.tailColor) {
-                    prevState = {id: elementObject.id, styleName: "tailColor", styleValue: tailColor, isValidValue: true};
-                    newState = {id: elementObject.id, styleName: "tailColor", styleValue: elementObject.style.tailColor, isValidValue: true};
-                    setTailColor(elementObject.style.tailColor);
-                } else if (lineColor !== elementObject.style.lineColor) {
-                    prevState = {id: elementObject.id, styleName: "lineColor", styleValue: lineColor, isValidValue: true};
-                    newState = {id: elementObject.id, styleName: "lineColor", styleValue: elementObject.style.lineColor, isValidValue: true};
-                    setLineColor(elementObject.style.lineColor);
-                } else {
-                    return;
-                }
 
                 const obj = {
                     culprit: "connector",
                     type: "changeStyle",
-                    prevState,
-                    newState,
+                    prevState: {},
+                    newState: {},
                 };
 
-                optionsContext.addToChangesArray(obj);
-            }, [400]);
+                if (elementObject.id !== connectorId) {
+                    return;
+                } else if (headColor !== elementObject.style.headColor) {
+                    obj.prevState = {id: elementObject.id, styleName: "headColor", styleValue: headColor, isValidValue: true};
+                    obj.newState = {id: elementObject.id, styleName: "headColor", styleValue: elementObject.style.headColor, isValidValue: true};
+                    setHeadColor(elementObject.style.headColor);
+                } else {
+                    return;
+                }
+
+                if(connectorsArrayContext.wasModifiedByUser){
+                    optionsContext.addToChangesArray(obj);
+                }
+            }, 100);
 
             return () => {
                 clearTimeout(timer);
             };
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [elementObject.style.headColor, elementObject.style.tailColor, elementObject.style.lineColor]);
+    }, [elementObject.style.headColor]);
+
+    useEffect(() => {
+        if (type !== "default") {
+            let timer = setTimeout(() => {
+
+                const obj = {
+                    culprit: "connector",
+                    type: "changeStyle",
+                    prevState: {},
+                    newState: {},
+                };
+
+                if (elementObject.id !== connectorId) {
+                    return;
+                } else if (tailColor !== elementObject.style.tailColor) {
+                    obj.prevState = {id: elementObject.id, styleName: "tailColor", styleValue: tailColor, isValidValue: true};
+                    obj.newState = {id: elementObject.id, styleName: "tailColor", styleValue: elementObject.style.tailColor, isValidValue: true};
+                    setTailColor(elementObject.style.tailColor);
+                } else {
+                    return;
+                }
+
+                if(connectorsArrayContext.wasModifiedByUser){
+                    optionsContext.addToChangesArray(obj);
+                }
+            }, 100);
+
+            return () => {
+                clearTimeout(timer);
+            };
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [elementObject.style.tailColor]);
+
+    useEffect(() => {
+
+        if (type !== "default") {
+            let timer = setTimeout(() => {
+
+                const obj = {
+                    culprit: "connector",
+                    type: "changeStyle",
+                    prevState: {},
+                    newState: {},
+                };
+
+                if (elementObject.id !== connectorId) {
+                    return;
+                } else if (lineColor !== elementObject.style.lineColor) {
+                    obj.prevState = {id: elementObject.id, styleName: "lineColor", styleValue: lineColor, isValidValue: true};
+                    obj.newState = {id: elementObject.id, styleName: "lineColor", styleValue: elementObject.style.lineColor, isValidValue: true};
+                    setLineColor(elementObject.style.lineColor);
+                } else {
+                    return;
+                }
+
+                if(connectorsArrayContext.wasModifiedByUser){
+                    optionsContext.addToChangesArray(obj);
+                }
+            }, 100);
+
+            return () => {
+                clearTimeout(timer);
+            };
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [elementObject.style.lineColor]);
 
     useEffect(() => {
         if (connectorId !== elementObject.id) {
@@ -83,6 +142,8 @@ export default function FormConnector({ elementObject, type }) {
         if (type === "default") {
             connectorsArrayContext.updateDefaultCustomStyles(elementObject.type, e.target.name, e.target.type === "checkbox" ? e.target.checked : e.target.value, isValidValue);
         } else {
+            connectorsArrayContext.toggleUserModificationIndicator(true);
+
             if (e.target.name === "showHead" || e.target.name === "endAnchor" || e.target.name === "showTail" || e.target.name === "startAnchor" || e.target.name === "dashness" || e.target.name === "path") {
                 const prevState = {id: elementObject.id, styleName: e.target.name, styleValue: elementObject.style[e.target.name], isValidValue: true};
                 const newState = {id: elementObject.id, styleName: e.target.name, styleValue: e.target.type === "checkbox" ? e.target.checked : e.target.value, isValidValue};
@@ -104,6 +165,8 @@ export default function FormConnector({ elementObject, type }) {
     function inputSaveHandler(e, isValidValue = true) {
         let prevState;
         let newState;
+
+        e.target.blur();
 
         if ((headSize === elementObject.headSize && tailSize === elementObject.tailSize && strokeWidth === elementObject.strokeWidth && middleLabelText === elementObject.style.middleLabelText &&
                 middleLabelStyleMarginLeft === elementObject.style.middleLabelStyle.marginLeft && middleLabelStyleMarginTop === elementObject.style.middleLabelStyle.marginTop) || 
