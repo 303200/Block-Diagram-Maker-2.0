@@ -308,8 +308,8 @@ export default function Canvas() {
 
         if (leftValue < 0) {
             leftValue = 0;
-        } else if (leftValue > 2604) {
-            leftValue = 2604;
+        } else if (leftValue > 2904) {
+            leftValue = 2904;
         }
 
         //przesunięcie bloku
@@ -329,8 +329,8 @@ export default function Canvas() {
 
                 if (leftValue < 0) {
                     leftValue = 0;
-                } else if (leftValue > 2604) {
-                    leftValue = 2604;
+                } else if (leftValue > 2904) {
+                    leftValue = 2904;
                 }
 
                 blocksArrayContext.updateBlockPosition(block.id, {top: topValue, left: leftValue});
